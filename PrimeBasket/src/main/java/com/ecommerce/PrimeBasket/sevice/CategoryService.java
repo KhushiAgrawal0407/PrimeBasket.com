@@ -1,14 +1,13 @@
 package com.ecommerce.PrimeBasket.sevice;
 
-import com.ecommerce.PrimeBasket.model.Category;
-
-import java.util.List;
+import com.ecommerce.PrimeBasket.payload.CategoryDTO;
+import com.ecommerce.PrimeBasket.payload.CategoryResponse;
 
 public interface CategoryService {
-    List<Category> getCategories();
-    void createCategory(Category category);
+    CategoryResponse getCategories(Integer pageNo, Integer pageSize, String sortBy, String sortOrder);
+    CategoryDTO createCategory(CategoryDTO categoryDTO);
 
-    String deleteCategory(Long categoryId);
+    CategoryDTO deleteCategory(Long categoryId);
 
-    Category updateCategory(Category category, Long categoryId);
+    CategoryDTO updateCategory(CategoryDTO categoryDTO, Long categoryId);
 }
