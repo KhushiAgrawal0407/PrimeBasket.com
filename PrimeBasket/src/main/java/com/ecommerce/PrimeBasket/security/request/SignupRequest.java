@@ -1,5 +1,6 @@
 package com.ecommerce.PrimeBasket.security.request;
 
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
@@ -14,12 +15,20 @@ public class SignupRequest {
 
     @NotBlank
     @Size(max=50)
+    @Email
     private String email;
+
+    private Set<String> role;
 
     @NotBlank
     @Size(min=6,max=40)
     private String password;
 
-    private Set<String> role;
+    public Set<String> getRole() {
+        return role;
+    }
 
+    public void setRole(Set<String> role) {
+        this.role = role;
+    }
 }
