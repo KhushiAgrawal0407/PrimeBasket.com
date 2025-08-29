@@ -1,4 +1,4 @@
-package com.ecommerce.PrimeBasket.security.jwt;
+package com.ecommerce.PrimeBasket.security.request;
 
 public class LoginRequest {
     private String username;
