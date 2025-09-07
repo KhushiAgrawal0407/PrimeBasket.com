@@ -1,11 +1,14 @@
-package com.ecommerce.PrimeBasket.sevice;
+package com.ecommerce.PrimeBasket.service;
 
 import com.ecommerce.PrimeBasket.exceptions.APIException;
 import com.ecommerce.PrimeBasket.exceptions.ResourceNotFoundException;
+import com.ecommerce.PrimeBasket.model.Cart;
 import com.ecommerce.PrimeBasket.model.Category;
 import com.ecommerce.PrimeBasket.model.Product;
+import com.ecommerce.PrimeBasket.payload.CartDTO;
 import com.ecommerce.PrimeBasket.payload.ProductDTO;
 import com.ecommerce.PrimeBasket.payload.ProductResponse;
+import com.ecommerce.PrimeBasket.repository.CartRepository;
 import com.ecommerce.PrimeBasket.repository.CategoryRepository;
 import com.ecommerce.PrimeBasket.repository.ProductRepository;
 import org.modelmapper.ModelMapper;
@@ -20,6 +23,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class ProductServiceImplementation implements ProductService {
@@ -29,6 +33,12 @@ public class ProductServiceImplementation implements ProductService {
 
     @Autowired
     private CategoryRepository categoryRepository;
+
+    @Autowired
+    private CartRepository cartRepository;
+
+    @Autowired
+    private CartService cartService;
 
     @Autowired
     private ModelMapper modelMapper;
@@ -147,6 +157,22 @@ public class ProductServiceImplementation implements ProductService {
         existingProduct.setSpecialPrice(product.getSpecialPrice());
 
         Product updatedProduct = productRepository.save(existingProduct);
+
+        //first we found all the carts that is making use of product with productId.
+        List<Cart> carts = cartRepository.findCartsByProductId(productId);
+        //then from the carts we converted this carts into stream and we mapped this cart to cartDTO
+        List<CartDTO> cartDTOS = carts.stream().map(cart-> {
+            CartDTO cartDTO = modelMapper.map(cart,CartDTO.class);
+            //We extracted the cart items to get product and mapped the product to productDTO
+            List<ProductDTO> products = cart.getCartItems().stream()
+                    .map(p->modelMapper.map(p,ProductDTO.class)).toList();
+            //then we sent the mapped product to cartDTO
+            cartDTO.setProductDTO(products);
+            return cartDTO;
+        }).collect(Collectors.toList());
+        //for each item in the cart dto, we need to call a particular method.
+        cartDTOS.forEach(cart->cartService.updateProductInCarts(cart.getCartId(),productId));
+
         return modelMapper.map(updatedProduct, ProductDTO.class);
 
     }
@@ -154,6 +180,12 @@ public class ProductServiceImplementation implements ProductService {
     public ProductDTO deleteProduct(Long productId) {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new ResourceNotFoundException("product","productId", productId));
+
+        //linking product with cart class
+        //if a product is deleted, then the cartItem should also be deleted that is the product from the cart.
+        List<Cart> carts = cartRepository.findCartsByProductId(productId);
+        carts.forEach(cart -> cartService.deleteProductFromCart(cart.getCartId(),productId));
+
         productRepository.delete(product);
         return modelMapper.map(product, ProductDTO.class);
     }

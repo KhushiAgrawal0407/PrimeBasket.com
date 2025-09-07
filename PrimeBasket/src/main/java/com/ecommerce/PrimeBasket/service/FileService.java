@@ -1,4 +1,4 @@
-package com.ecommerce.PrimeBasket.sevice;
+package com.ecommerce.PrimeBasket.service;
 
 import org.springframework.web.multipart.MultipartFile;
 

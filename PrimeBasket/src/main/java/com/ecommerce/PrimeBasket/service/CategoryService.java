@@ -1,4 +1,4 @@
-package com.ecommerce.PrimeBasket.sevice;
+package com.ecommerce.PrimeBasket.service;
 
 import com.ecommerce.PrimeBasket.payload.CategoryDTO;
 import com.ecommerce.PrimeBasket.payload.CategoryResponse;

@@ -3,7 +3,7 @@ package com.ecommerce.PrimeBasket.controller;
 import com.ecommerce.PrimeBasket.config.AppConstants;
 import com.ecommerce.PrimeBasket.payload.ProductDTO;
 import com.ecommerce.PrimeBasket.payload.ProductResponse;
-import com.ecommerce.PrimeBasket.sevice.ProductService;
+import com.ecommerce.PrimeBasket.service.ProductService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

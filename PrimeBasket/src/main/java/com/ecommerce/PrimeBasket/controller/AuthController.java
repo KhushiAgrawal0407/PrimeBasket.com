@@ -1,24 +1,12 @@
 package com.ecommerce.PrimeBasket.controller;
 
-import com.ecommerce.PrimeBasket.config.AppConstants;
-import com.ecommerce.PrimeBasket.model.AppRole;
-import com.ecommerce.PrimeBasket.model.Role;
-import com.ecommerce.PrimeBasket.model.User;
 import com.ecommerce.PrimeBasket.payload.AuthenticationResult;
-import com.ecommerce.PrimeBasket.repository.RoleRepository;
-import com.ecommerce.PrimeBasket.repository.UserRepository;
-import com.ecommerce.PrimeBasket.security.jwt.JwtUtils;
 import com.ecommerce.PrimeBasket.security.request.LoginRequest;
 import com.ecommerce.PrimeBasket.security.request.SignupRequest;
 import com.ecommerce.PrimeBasket.security.response.MessageResponse;
-import com.ecommerce.PrimeBasket.security.response.UserInfoResponse;
-import com.ecommerce.PrimeBasket.security.services.UserDetailsImplementation;
-import com.ecommerce.PrimeBasket.sevice.AuthService;
+import com.ecommerce.PrimeBasket.service.AuthService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
