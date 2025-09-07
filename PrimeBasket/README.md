@@ -2,7 +2,7 @@
 
 A Full-Stack eCommerce Web Application
 
-## 🚀 Overview
+## 📌 Overview
 
 - PrimeBasket.com is a full-stack eCommerce platform built with Spring Boot (Backend), React (Frontend), and PostgreSQL (Database).
 - It replicates core features of a modern online shopping system — from browsing products to checkout — with secure authentication, robust data handling, and scalable architecture.
