@@ -3,19 +3,21 @@ package com.ecommerce.PrimeBasket.service;
 import com.ecommerce.PrimeBasket.exceptions.APIException;
 import com.ecommerce.PrimeBasket.exceptions.ResourceNotFoundException;
 import com.ecommerce.PrimeBasket.model.*;
-import com.ecommerce.PrimeBasket.payload.OrderDTO;
-import com.ecommerce.PrimeBasket.payload.OrderItemDTO;
-import com.ecommerce.PrimeBasket.payload.PaymentDTO;
-import com.ecommerce.PrimeBasket.payload.ProductDTO;
+import com.ecommerce.PrimeBasket.payload.*;
 import com.ecommerce.PrimeBasket.repository.*;
 import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class OrderServiceImplementation implements OrderService{
@@ -118,5 +120,38 @@ public class OrderServiceImplementation implements OrderService{
         orderDTO.setPaymentDTO(paymentDTO);
 
         return orderDTO;
+    }
+
+    @Override
+    public OrderResponse getAllOrders(Integer pageNo, Integer pageSize, String sortBy, String sortOrder) {
+        Sort sortByAndOrder = sortOrder.equalsIgnoreCase("asc")
+                ? Sort.by(sortBy).ascending()
+                : Sort.by(sortBy).descending();
+
+        Pageable pageDetails = PageRequest.of(pageNo, pageSize, sortByAndOrder);
+        Page<Order> pageOrders = orderRepository.findAll(pageDetails);
+        List <Order> orders = pageOrders.getContent();
+
+        List<OrderDTO> orderDTOS = orders.stream()
+                .map(order -> modelMapper.map(order, OrderDTO.class))
+                .toList();
+
+        OrderResponse orderResponse = new OrderResponse();
+        orderResponse.setContent(orderDTOS);
+        orderResponse.setPageNo(pageOrders.getNumber());
+        orderResponse.setPageSize(pageOrders.getSize());
+        orderResponse.setTotalPages(pageOrders.getTotalPages());
+        orderResponse.setTotalElements(pageOrders.getTotalElements());
+        orderResponse.setLastPage(pageOrders.isLast());
+        return orderResponse;
+    }
+
+    @Override
+    public OrderDTO updateOrder(Long orderId, String status) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new ResourceNotFoundException("Order", "orderId", orderId));
+        order.setOrderStatus(status);
+        orderRepository.save(order);
+        return modelMapper.map(order, OrderDTO.class);
     }
 }

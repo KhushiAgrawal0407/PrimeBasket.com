@@ -1,6 +1,7 @@
 package com.ecommerce.PrimeBasket.service;
 
 import com.ecommerce.PrimeBasket.payload.CartDTO;
+import com.ecommerce.PrimeBasket.payload.CartItemDTO;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
@@ -21,4 +22,6 @@ public interface CartService {
 
     //method where when product is updated we want to update the cart also.
     void updateProductInCarts(Long cartId, Long productId);
+
+    CartDTO createOrUpdateCartWithItems(List<CartItemDTO> cartItems);
 }

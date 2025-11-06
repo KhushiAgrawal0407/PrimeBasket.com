@@ -6,6 +6,7 @@ import com.ecommerce.PrimeBasket.model.Cart;
 import com.ecommerce.PrimeBasket.model.CartItem;
 import com.ecommerce.PrimeBasket.model.Product;
 import com.ecommerce.PrimeBasket.payload.CartDTO;
+import com.ecommerce.PrimeBasket.payload.CartItemDTO;
 import com.ecommerce.PrimeBasket.payload.ProductDTO;
 import com.ecommerce.PrimeBasket.repository.CartItemRepository;
 import com.ecommerce.PrimeBasket.repository.CartRepository;
@@ -124,7 +125,9 @@ public class CartServiceImplementation implements CartService {
             throw new ResourceNotFoundException("Cart","cartId",cartId);
         }
         CartDTO cartDTO=modelMapper.map(cart, CartDTO.class);
-        cart.getCartItems().forEach(c->c.getProduct().setQuantity(c.getQuantity()));
+
+        //cart.getCartItems().forEach(c->c.getProduct().setQuantity(c.getQuantity()));
+
         List<ProductDTO> products=cart.getCartItems().stream()
                 .map(product->modelMapper.map(product.getProduct(), ProductDTO.class))
                 .collect(Collectors.toList());
@@ -236,6 +239,72 @@ public class CartServiceImplementation implements CartService {
         //you are re-setting the total price of the cart.
         cart.setTotalPrice(cartPrice + cartItem.getProductPrice()*cartItem.getQuantity());
         cartItem=cartItemRepository.save(cartItem);
+    }
+
+    @Transactional
+    @Override
+    public CartDTO createOrUpdateCartWithItems(List<CartItemDTO> cartItems) {
+        System.out.println("Backend received this payload: " + cartItems);
+        //get user's email
+        String emailId=authUtil.loggedInEmail();
+
+        //check if an existing cart is available or create a new one
+        Cart existingCart = cartRepository.findCartByEmail(emailId);
+        if(existingCart==null){
+            existingCart=new Cart();
+            existingCart.setTotalPrice(0.0);
+            existingCart.setUser(authUtil.loggedInUser());
+            existingCart=cartRepository.save(existingCart);
+        }
+        else{
+            //clear all the current items in the existing cart
+            cartItemRepository.deleteAllByCartId(existingCart.getCartId());
+        }
+
+        //process each item in the list to add to the cart
+        double totalPrice=0.0;
+        for(CartItemDTO cartItemDTO:cartItems){
+            Long productId=cartItemDTO.getProductId();
+            Integer quantity=cartItemDTO.getQuantity();
+
+            //find the product by id
+            Product product = productRepository.findById(productId)
+                    .orElseThrow(()->new ResourceNotFoundException("Product", "productId",productId));
+
+            //directly update product stock and total price
+            if (product.getQuantity() < quantity) {
+                throw new APIException("Insufficient stock for product " + product.getProductName());
+            }
+            totalPrice+=product.getSpecialPrice()*quantity;
+
+            //create and save cart item
+            CartItem cartItem=new CartItem();
+            cartItem.setProduct(product);
+            cartItem.setCart(existingCart);
+            cartItem.setQuantity(quantity);
+            cartItem.setProductPrice(product.getSpecialPrice());
+            cartItem.setDiscount(product.getDiscount());
+            cartItemRepository.save(cartItem);
+        }
+
+        //update the cart's total price and save
+        existingCart.setTotalPrice(totalPrice);
+        cartRepository.save(existingCart);
+
+        List<CartItem> savedCartItems = cartItemRepository.findByCart(existingCart);
+
+        CartDTO cartDTO = modelMapper.map(existingCart, CartDTO.class);
+        //now we'll update the list of products
+        List<ProductDTO> productDTOS = savedCartItems.stream()
+                .map(item->{
+                    ProductDTO prod=modelMapper.map(item.getProduct(), ProductDTO.class);
+                    prod.setQuantity(item.getQuantity());
+                    return prod;
+                }).collect(Collectors.toList());;
+
+        cartDTO.setProductDTO(productDTOS);
+        System.out.println("Backend is sending this CartDTO: " + cartDTO);
+        return cartDTO;
     }
 
     private Cart createCart(){

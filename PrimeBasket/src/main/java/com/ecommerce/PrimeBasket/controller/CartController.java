@@ -2,6 +2,7 @@ package com.ecommerce.PrimeBasket.controller;
 
 import com.ecommerce.PrimeBasket.model.Cart;
 import com.ecommerce.PrimeBasket.payload.CartDTO;
+import com.ecommerce.PrimeBasket.payload.CartItemDTO;
 import com.ecommerce.PrimeBasket.payload.ProductDTO;
 import com.ecommerce.PrimeBasket.repository.CartRepository;
 import com.ecommerce.PrimeBasket.service.CartService;
@@ -30,6 +31,12 @@ public class CartController {
 
     @Autowired
     private ModelMapper modelMapper;
+
+    @PostMapping("/cart/create")
+    public ResponseEntity<CartDTO> createOrUpdateCart(@RequestBody List<CartItemDTO> cartItems){
+        CartDTO cartDTO = cartService.createOrUpdateCartWithItems(cartItems);
+        return new ResponseEntity<>(cartDTO, HttpStatus.CREATED);
+    }
 
     @PostMapping("/carts/products/{productId}/quantity/{quantity}")
     public ResponseEntity<CartDTO> addProductToCart(@PathVariable Long productId, @PathVariable Integer quantity) {
