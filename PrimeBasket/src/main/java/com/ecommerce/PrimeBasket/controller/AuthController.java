@@ -1,5 +1,6 @@
 package com.ecommerce.PrimeBasket.controller;
 
+import com.ecommerce.PrimeBasket.config.AppConstants;
 import com.ecommerce.PrimeBasket.payload.AuthenticationResult;
 import com.ecommerce.PrimeBasket.security.request.LoginRequest;
 import com.ecommerce.PrimeBasket.security.request.SignupRequest;
@@ -7,6 +8,9 @@ import com.ecommerce.PrimeBasket.security.response.MessageResponse;
 import com.ecommerce.PrimeBasket.service.AuthService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
@@ -53,5 +57,12 @@ public class AuthController {
         return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE,
                         cookie.toString())
                 .body(new MessageResponse("You've been signed out!"));
+    }
+
+    @GetMapping("/sellers")
+    public ResponseEntity<?> getAllSellers(@RequestParam(name = "pageNo", defaultValue = AppConstants.PAGE_NUMBER, required = false) Integer pageNo){
+        Sort sortByAndOrder = Sort.by(AppConstants.SORT_USERS_BY).descending();
+        Pageable pageDetails = PageRequest.of(pageNo, Integer.parseInt(AppConstants.PAGE_SIZE), sortByAndOrder);
+        return ResponseEntity.ok(authService.getAllSellers(pageDetails));
     }
 }
